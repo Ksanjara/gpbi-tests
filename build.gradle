@@ -1,0 +1,63 @@
+plugins {
+    id 'java'
+    id 'io.qameta.allure' version '2.12.0'
+}
+
+group = 'ru.ksandrasky'
+version = '1.0-SNAPSHOT'
+
+allure {
+    report {
+        version.set("2.19.0")
+    }
+    adapter { // отвечает за появление папочки build/allure-results
+        aspectjWeaver.set(true) //обработка аннотации @Step
+        frameworks {
+            junit5 { //название фреймворка
+                adapterVersion.set("2.29.0") //версия интеграции фреймворка и Allure
+            }
+        }
+    }
+}
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    testImplementation(
+            "com.codeborne:selenide:6.19.1",
+            "org.junit.jupiter:junit-jupiter:5.10.0",
+            'org.slf4j:slf4j-simple:2.0.7',
+            "com.github.javafaker:javafaker:1.0.2",
+            'io.qameta.allure:allure-selenide:2.29.0'
+    )
+}
+
+tasks.withType(JavaCompile).configureEach {
+    options.encoding = 'UTF-8'
+}
+
+tasks.withType(Test) {
+    useJUnitPlatform()
+    systemProperties(System.getProperties())
+    testLogging {
+        lifecycle {
+            events "started", "skipped", "failed", "standard_error", "standard_out"
+            exceptionFormat "short"
+        }
+    }
+}
+
+task smoke_tests(type: Test) {
+    useJUnitPlatform {
+        includeTags("Smoke")
+    }
+
+}
+
+task regression_test(type: Test) {
+    useJUnitPlatform {
+        includeTags("Regression")
+    }
+}
